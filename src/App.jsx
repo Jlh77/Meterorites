@@ -1,11 +1,13 @@
 import Header from "./components/Header.jsx";
 import DataList from "./components/DataList.jsx";
+import MapDisplay from "./components/MapDisplay.jsx";
 import "./App.css";
 import { useState } from "react";
 
 function App() {
   const [startYear, setStartYear] = useState(1880);
   const [endYear, setEndYear] = useState(2022);
+  const [meteoriteData, setMeteroriteData] = useState([]);
   return (
     <div className="App">
       <Header
@@ -14,7 +16,13 @@ function App() {
         setStartYear={setStartYear}
         setEndYear={setEndYear}
       />
-      <DataList startYear={startYear} endYear={endYear} />
+      <MapDisplay meteoriteData={meteoriteData} />
+      <DataList
+        startYear={startYear}
+        endYear={endYear}
+        meteoriteData={meteoriteData}
+        setMeteroriteData={setMeteroriteData}
+      />
     </div>
   );
 }

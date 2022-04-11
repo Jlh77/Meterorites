@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 
-const DataList = ({ startYear, endYear }) => {
-  const [meteoriteData, setMeteroriteData] = useState([]);
-
+const DataList = ({ startYear, endYear, setMeteroriteData, meteoriteData }) => {
   useEffect(() => {
     fetch(
       `https://data.nasa.gov/resource/gh4g-9sfh.json?$where=year between '${startYear}-01-10T12:00:00' and '${endYear}-01-10T14:00:00' and fall='Fell' order by year asc`

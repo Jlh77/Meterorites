@@ -1,37 +1,39 @@
-import Map from "ol/Map";
-import View from "ol/View";
-import { Tile as TileLayer, Vector as VectorLayer } from "ol/layer";
-import { fromLonLat } from "ol/proj";
-import Feature from "ol/Feature";
-import Point from "ol/geom/Point";
-import { Circle as CircleStyle, Stroke, Style } from "ol/style";
-import { OSM, Vector as VectorSource } from "ol/source";
-import { easeOut } from "ol/easing";
-import { getVectorContext } from "ol/render";
-import { unByKey } from "ol/Observable";
-import { useState, useRef, useEffect } from "react";
+import Map from 'ol/Map';
+import View from 'ol/View';
+import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer';
+import { fromLonLat } from 'ol/proj';
+import Feature from 'ol/Feature';
+import Point from 'ol/geom/Point';
+import { Circle as CircleStyle, Stroke, Style } from 'ol/style';
+import { OSM, Vector as VectorSource } from 'ol/source';
+import { easeOut } from 'ol/easing';
+import { getVectorContext } from 'ol/render';
+import { unByKey } from 'ol/Observable';
+import { useState, useRef, useEffect } from 'react';
 
-import "./MapDisplay.css";
+import './MapDisplay.css';
 
 const MapDisplay = ({ meteoriteData }) => {
   const [map, setMap] = useState();
+  const [featuresLayer, setFeaturesLayer] = useState();
+  const [tileLayer, setTileLayer] = useState();
+  const [source, setSource] = useState();
   const mapElement = useRef();
-
-  const tileLayer = new TileLayer({
-    source: new OSM({
-      wrapX: false,
-    }),
-  });
-
-  const source = new VectorSource({
-    wrapX: false,
-  });
-  const vector = new VectorLayer({
-    source: source,
-  });
 
   // Page loads, makes map
   useEffect(() => {
+    const tileLayer = new TileLayer({
+      source: new OSM({
+        wrapX: false,
+      }),
+    });
+
+    const source = new VectorSource({
+      wrapX: false,
+    });
+    const vector = new VectorLayer({
+      source: source,
+    });
     const initialMap = new Map({
       target: mapElement.current,
       layers: [tileLayer, vector],
@@ -41,6 +43,9 @@ const MapDisplay = ({ meteoriteData }) => {
       }),
     });
     setMap(initialMap);
+    setFeaturesLayer(vector);
+    setTileLayer(tileLayer);
+    setSource(source);
     console.log(initialMap);
   }, []);
 
@@ -55,7 +60,7 @@ const MapDisplay = ({ meteoriteData }) => {
 
     const addPlace = () => {
       meteoriteData.forEach((meteorite) => {
-        console.log("adding place", ">>>>>>>", meteorite);
+        console.log('adding place', '>>>>>>>', meteorite);
         console.log(meteoriteData.length);
         if (!meteorite.geolocation) return;
         //console.log("Here");
@@ -66,7 +71,11 @@ const MapDisplay = ({ meteoriteData }) => {
           ])
         );
         const feature = new Feature(geom);
-        source.addFeature(feature);
+        setSource((currentSource) => {
+          const newSource = { ...currentSource };
+          newSource.addFeature(feature);
+          return newSource;
+        });
       }, 1000);
     };
     const duration = 3000;
@@ -88,7 +97,7 @@ const MapDisplay = ({ meteoriteData }) => {
           image: new CircleStyle({
             radius: radius,
             stroke: new Stroke({
-              color: "rgba(255, 0, 0, " + opacity + ")",
+              color: 'rgba(255, 0, 0, ' + opacity + ')',
               width: 0.25 + opacity,
             }),
           }),
@@ -99,24 +108,29 @@ const MapDisplay = ({ meteoriteData }) => {
         vectorContext.drawGeometry(flashGeom);
         // tell OpenLayers to continue postrender animation
         map.render();
-        console.log("definitely here");
+        console.log('definitely here');
       };
       const start = Date.now();
-      const listenerKey = tileLayer.on("postrender", animate);
+      const listenerKey = tileLayer.on('postrender', animate);
     };
-    source.on("addfeature", function (e) {
-      flash(e.feature);
+    setSource((currentSource) => {
+      const newSource = { ...currentSource };
+      newSource.on('addfeature', function (e) {
+        flash(e.feature);
+      });
+      return newSource;
     });
+
     addPlace();
   }, [meteoriteData]);
   return (
-    <div className="mapRow">
+    <div className='mapRow'>
       <link
-        rel="stylesheet"
-        href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.14.1/css/ol.css"
-        type="text/css"
+        rel='stylesheet'
+        href='https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.14.1/css/ol.css'
+        type='text/css'
       ></link>
-      <div className="map-container" ref={mapElement}></div>
+      <div className='map-container' ref={mapElement}></div>
     </div>
   );
 };
